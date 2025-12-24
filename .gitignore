@@ -6,11 +6,11 @@ dist/*
 *.o
 *.exe
 *.out
-*.bin
+#*.bin
 
 # CSV data files
-*.csv
+#*.csv
 
 # Temporary files
 *~
-*.part
+#*.part
