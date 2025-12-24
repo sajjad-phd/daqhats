@@ -31,7 +31,7 @@ int main(void)
     // mcc118_a_in_scan_start to specify the channels to acquire.
     // The functions below, will parse the channel mask into a
     // character string for display purposes.
-    uint8_t channel_mask = {CHAN0 | CHAN1 | CHAN2 | CHAN3};
+    uint8_t channel_mask = {CHAN0 | CHAN3 | CHAN4 | CHAN5};
     convert_chan_mask_to_string(channel_mask, channel_string);
     
     uint32_t samples_per_channel = 0;
