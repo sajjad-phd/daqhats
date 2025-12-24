@@ -1,7 +1,7 @@
 NAME = channel4_ringbuffer_logger
 OBJ = $(NAME).o
 LIBS = -ldaqhats -lpthread
-CFLAGS = -Wall -I/usr/local/include -g -std=c99
+CFLAGS = -Wall -I/usr/local/include -g -std=c99 -D_POSIX_C_SOURCE=200809L
 CC = gcc
 EXTENSION = .c
 
