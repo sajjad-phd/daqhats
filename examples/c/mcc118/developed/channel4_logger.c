@@ -35,7 +35,7 @@ int main(void)
     uint8_t num_channels = 1;  // Only channel 4
     
     // 10 seconds at 4 kHz = 40000 samples
-    double scan_rate = 4000.0;  // 4 kHz
+    double scan_rate = 1000.0;  // 4 kHz
     double duration_seconds = 10.0;
     uint32_t samples_per_channel = (uint32_t)(scan_rate * duration_seconds);  // 40000 samples
     double actual_scan_rate = 0.0;
