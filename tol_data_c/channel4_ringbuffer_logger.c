@@ -35,7 +35,10 @@
 #define SAMPLES_PER_CHUNK ((uint32_t)(SCAN_RATE_HZ * CHUNK_DURATION_SEC))  // 8000 samples
 #define RECORD_SIZE 8  // sizeof(double) = 8 bytes per sample
 #define RING_BUFFER_SIZE (4 * 1024 * 1024)  // 4 MB ring buffer
-#define OUTPUT_DIR "DAD_Files"
+#define OUTPUT_DIR_RELATIVE "DAD_Files"
+
+// Global variable for output directory path
+static char g_output_dir[512] = {0};
 
 // Binary file format constants
 #define MAGIC "SDAT"
@@ -238,10 +241,10 @@ static int write_chunk_file(uint64_t seq_start, double *samples, uint32_t sample
     
     snprintf(filename_part, sizeof(filename_part), 
              "%s/chunk_%016llx_%016llx.bin.part", 
-             OUTPUT_DIR, (unsigned long long)g_boot_id, (unsigned long long)seq_start);
+             g_output_dir, (unsigned long long)g_boot_id, (unsigned long long)seq_start);
     snprintf(filename_final, sizeof(filename_final), 
              "%s/chunk_%016llx_%016llx.bin", 
-             OUTPUT_DIR, (unsigned long long)g_boot_id, (unsigned long long)seq_start);
+             g_output_dir, (unsigned long long)g_boot_id, (unsigned long long)seq_start);
     
     FILE *f = fopen(filename_part, "wb");
     if (!f)
@@ -463,7 +466,18 @@ int main(void)
     printf("Scan rate: %.0f Hz\n", SCAN_RATE_HZ);
     printf("Chunk duration: %.1f seconds\n", CHUNK_DURATION_SEC);
     printf("Samples per chunk: %u\n", SAMPLES_PER_CHUNK);
-    printf("Output directory: %s\n", OUTPUT_DIR);
+    
+    // Build absolute path for output directory
+    char cwd[512];
+    if (getcwd(cwd, sizeof(cwd)) == NULL)
+    {
+        fprintf(stderr, "Error: Failed to get current working directory: %s\n", strerror(errno));
+        return -1;
+    }
+    
+    // Build full path: current_dir/DAD_Files
+    snprintf(g_output_dir, sizeof(g_output_dir), "%s/%s", cwd, OUTPUT_DIR_RELATIVE);
+    printf("Output directory: %s\n", g_output_dir);
     
     // Generate boot ID
     g_boot_id = generate_boot_id();
@@ -471,22 +485,22 @@ int main(void)
     printf("Boot ID: %016llx\n", (unsigned long long)g_boot_id);
     
     // Ensure output directory exists
-    if (ensure_output_dir(OUTPUT_DIR) != 0)
+    if (ensure_output_dir(g_output_dir) != 0)
     {
         fprintf(stderr, "Error: Failed to create output directory: %s (errno: %s)\n", 
-                OUTPUT_DIR, strerror(errno));
+                g_output_dir, strerror(errno));
         return -1;
     }
     
     // Verify directory was created
     struct stat st;
-    if (stat(OUTPUT_DIR, &st) != 0)
+    if (stat(g_output_dir, &st) != 0)
     {
         fprintf(stderr, "Error: Output directory does not exist: %s (errno: %s)\n", 
-                OUTPUT_DIR, strerror(errno));
+                g_output_dir, strerror(errno));
         return -1;
     }
-    printf("Output directory verified: %s\n", OUTPUT_DIR);
+    printf("Output directory verified: %s\n", g_output_dir);
     
     // Initialize ring buffer
     if (init_ring_buffer(&g_ring_buffer, RING_BUFFER_SIZE) != 0)
