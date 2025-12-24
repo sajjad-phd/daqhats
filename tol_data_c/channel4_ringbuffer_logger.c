@@ -35,7 +35,7 @@
 #define SAMPLES_PER_CHUNK ((uint32_t)(SCAN_RATE_HZ * CHUNK_DURATION_SEC))  // 8000 samples
 #define RECORD_SIZE 8  // sizeof(double) = 8 bytes per sample
 #define RING_BUFFER_SIZE (4 * 1024 * 1024)  // 4 MB ring buffer
-#define OUTPUT_DIR "tol_data_c/DAD_Files"
+#define OUTPUT_DIR "DAD_Files"
 
 // Binary file format constants
 #define MAGIC "SDAT"
@@ -246,7 +246,17 @@ static int write_chunk_file(uint64_t seq_start, double *samples, uint32_t sample
     FILE *f = fopen(filename_part, "wb");
     if (!f)
     {
-        fprintf(stderr, "Error: Failed to open file %s: %s\n", filename_part, strerror(errno));
+        fprintf(stderr, "Error: Failed to open file %s: %s (current dir: ", 
+                filename_part, strerror(errno));
+        char cwd[512];
+        if (getcwd(cwd, sizeof(cwd)) != NULL)
+        {
+            fprintf(stderr, "%s)\n", cwd);
+        }
+        else
+        {
+            fprintf(stderr, "unknown)\n");
+        }
         return -1;
     }
     
@@ -409,7 +419,8 @@ static void* consumer_thread(void *arg)
         if (samples_collected >= SAMPLES_PER_CHUNK)
         {
             uint64_t seq_start = g_seq_counter;
-            if (write_chunk_file(seq_start, chunk_buffer, SAMPLES_PER_CHUNK, actual_rate) == 0)
+            int write_result = write_chunk_file(seq_start, chunk_buffer, SAMPLES_PER_CHUNK, actual_rate);
+            if (write_result == 0)
             {
                 printf("Chunk written: seq=%llu, samples=%u\n", 
                        (unsigned long long)seq_start, SAMPLES_PER_CHUNK);
@@ -417,7 +428,7 @@ static void* consumer_thread(void *arg)
             }
             else
             {
-                fprintf(stderr, "Error writing chunk file\n");
+                fprintf(stderr, "Error writing chunk file (error code: %d)\n", write_result);
             }
             
             samples_collected = 0;
@@ -462,9 +473,20 @@ int main(void)
     // Ensure output directory exists
     if (ensure_output_dir(OUTPUT_DIR) != 0)
     {
-        fprintf(stderr, "Error: Failed to create output directory: %s\n", OUTPUT_DIR);
+        fprintf(stderr, "Error: Failed to create output directory: %s (errno: %s)\n", 
+                OUTPUT_DIR, strerror(errno));
         return -1;
     }
+    
+    // Verify directory was created
+    struct stat st;
+    if (stat(OUTPUT_DIR, &st) != 0)
+    {
+        fprintf(stderr, "Error: Output directory does not exist: %s (errno: %s)\n", 
+                OUTPUT_DIR, strerror(errno));
+        return -1;
+    }
+    printf("Output directory verified: %s\n", OUTPUT_DIR);
     
     // Initialize ring buffer
     if (init_ring_buffer(&g_ring_buffer, RING_BUFFER_SIZE) != 0)
