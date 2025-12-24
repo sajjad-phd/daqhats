@@ -48,9 +48,7 @@ int main(void)
         channel_array);
 
     uint32_t internal_buffer_size_samples = 0;
-    // Increased buffer size for higher scan rates (e.g., 10 kHz)
-    // Buffer should hold at least 2-3 seconds of data at max scan rate
-    uint32_t user_buffer_size = 50000 * num_channels;  // Increased from 1000
+    uint32_t user_buffer_size = 1000 * num_channels;
     double read_buf[user_buffer_size];
     int total_samples_read = 0;
 
@@ -174,9 +172,7 @@ int main(void)
             fflush(stdout);
         }
 
-        // Reduced sleep time for higher scan rates to prevent buffer overrun
-        // At 10 kHz with 4 channels, we need to read more frequently
-        usleep(100000);  // Reduced from 500000 (0.5s to 0.1s)
+        usleep(500000);
 
     }
     while ((result == RESULT_SUCCESS) &&
