@@ -3,13 +3,13 @@
     MCC 118 Channel 4 Data Logger
     
     Purpose:
-        Acquire data from channel 4 at 10 kHz for 10 seconds and save to CSV file.
+        Acquire data from channel 4 at 4 kHz for 10 seconds and save to CSV file.
 
     Description:
         Performs a finite acquisition on channel 4 only:
-        - Scan rate: 10 kHz (10000 samples/second)
+        - Scan rate: 4 kHz (4000 samples/second)
         - Duration: 10 seconds
-        - Total samples: 100000 samples
+        - Total samples: 40000 samples
         - Output: CSV file in the same directory
 
 *****************************************************************************/
@@ -34,10 +34,10 @@ int main(void)
     
     uint8_t num_channels = 1;  // Only channel 4
     
-    // 10 seconds at 10 kHz = 100000 samples
-    double scan_rate = 10000.0;  // 10 kHz
+    // 10 seconds at 4 kHz = 40000 samples
+    double scan_rate = 4000.0;  // 4 kHz
     double duration_seconds = 10.0;
-    uint32_t samples_per_channel = (uint32_t)(scan_rate * duration_seconds);  // 100000 samples
+    uint32_t samples_per_channel = (uint32_t)(scan_rate * duration_seconds);  // 40000 samples
     double actual_scan_rate = 0.0;
     
     // Calculate actual scan rate
