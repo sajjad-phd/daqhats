@@ -14,6 +14,7 @@
         - File format: Binary with header (as per specification)
 
 *****************************************************************************/
+#define _POSIX_C_SOURCE 200809L
 #include "../examples/c/daqhats_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,6 +24,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/select.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <errno.h>
@@ -470,7 +472,7 @@ int main(void)
         fprintf(stderr, "Error: Failed to initialize ring buffer\n");
         return -1;
     }
-    printf("Ring buffer initialized: %zu bytes\n", RING_BUFFER_SIZE);
+    printf("Ring buffer initialized: %u bytes\n", (unsigned int)RING_BUFFER_SIZE);
     
     // Select MCC 118 device
     if (select_hat_device(HAT_ID_MCC_118, &g_hat_addr))
