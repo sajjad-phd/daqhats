@@ -10,7 +10,7 @@
         - Producer thread: Reads from MCC 118 at 4 kHz → writes to ring buffer
         - Consumer thread: Reads from ring buffer → writes to .bin.part files
         - Chunk duration: 2 seconds (8000 samples)
-        - Files saved to: tol_data_c/DAD Files/
+        - Files saved to: tol_data_c/DAD_Files/
         - File format: Binary with header (as per specification)
 
 *****************************************************************************/
@@ -35,7 +35,7 @@
 #define SAMPLES_PER_CHUNK ((uint32_t)(SCAN_RATE_HZ * CHUNK_DURATION_SEC))  // 8000 samples
 #define RECORD_SIZE 8  // sizeof(double) = 8 bytes per sample
 #define RING_BUFFER_SIZE (4 * 1024 * 1024)  // 4 MB ring buffer
-#define OUTPUT_DIR "tol_data_c/DAD Files"
+#define OUTPUT_DIR "tol_data_c/DAD_Files"
 
 // Binary file format constants
 #define MAGIC "SDAT"

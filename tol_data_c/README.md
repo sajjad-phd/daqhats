@@ -52,11 +52,11 @@ make
 The program will:
 1. Prompt you to press ENTER to start
 2. Begin acquisition (producer thread reads from sensor)
-3. Write chunk files every 2 seconds to `tol_data_c/DAD Files/`
+3. Write chunk files every 2 seconds to `tol_data_c/DAD_Files/`
 4. Press ENTER again to stop
 
 ## Output Files
-Files are saved to: `tol_data_c/DAD Files/`
+Files are saved to: `tol_data_c/DAD_Files/`
 
 **File naming format**: `chunk_<boot_id>_<seq_start>.bin`
 
