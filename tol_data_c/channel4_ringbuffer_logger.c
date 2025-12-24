@@ -15,19 +15,19 @@
 
 *****************************************************************************/
 #define _POSIX_C_SOURCE 200809L
-#include "../examples/c/daqhats_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <pthread.h>
 #include <unistd.h>
+#include <sys/select.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/select.h>
+#include <pthread.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <errno.h>
+#include "../examples/c/daqhats_utils.h"
 
 // Constants
 #define SCAN_RATE_HZ 4000.0
