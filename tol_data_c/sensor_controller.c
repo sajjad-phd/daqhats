@@ -43,6 +43,8 @@
 #define RING_BUFFER_SIZE (4 * 1024 * 1024)  // 4 MB ring buffer
 #define OUTPUT_DIR_RELATIVE "DAD_Files"
 #define SOCKET_PATH "/run/sensor_ctrl.sock"
+#define SOCKET_PATH_TMP "/tmp/sensor_ctrl.sock"
+#define SOCKET_PATH_LOCAL "./sensor_ctrl.sock"
 #define MAX_CMD_LEN 256
 
 // Binary file format constants
@@ -427,10 +429,30 @@ static void* control_thread(void *arg)
     struct sockaddr_un server_addr, client_addr;
     socklen_t client_len = sizeof(client_addr);
     char cmd_buffer[MAX_CMD_LEN];
+    char socket_path[256];
     ssize_t n;
     
+    // Determine socket path - try /tmp first (usually writable), then current directory
+    struct stat st;
+    if (stat("/tmp", &st) == 0 && S_ISDIR(st.st_mode))
+    {
+        // Try /tmp first (usually writable by all users)
+        snprintf(socket_path, sizeof(socket_path), "/tmp/sensor_ctrl.sock");
+    }
+    else if (stat("/run", &st) == 0 && S_ISDIR(st.st_mode))
+    {
+        // Try /run if /tmp doesn't exist
+        snprintf(socket_path, sizeof(socket_path), "/run/sensor_ctrl.sock");
+    }
+    else
+    {
+        // Use current directory as fallback
+        fprintf(stderr, "Warning: /tmp and /run not accessible, using current directory\n");
+        snprintf(socket_path, sizeof(socket_path), "./sensor_ctrl.sock");
+    }
+    
     // Remove existing socket file if it exists
-    unlink(SOCKET_PATH);
+    unlink(socket_path);
     
     // Create socket
     server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -443,20 +465,13 @@ static void* control_thread(void *arg)
     // Setup address
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sun_family = AF_UNIX;
-    strncpy(server_addr.sun_path, SOCKET_PATH, sizeof(server_addr.sun_path) - 1);
-    
-    // Ensure /run directory exists
-    struct stat st;
-    if (stat("/run", &st) != 0)
-    {
-        fprintf(stderr, "Warning: /run directory does not exist, creating socket in current directory\n");
-        strncpy(server_addr.sun_path, "./sensor_ctrl.sock", sizeof(server_addr.sun_path) - 1);
-    }
+    strncpy(server_addr.sun_path, socket_path, sizeof(server_addr.sun_path) - 1);
     
     // Bind socket
     if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
     {
         perror("bind");
+        fprintf(stderr, "Failed to bind socket at: %s\n", socket_path);
         close(server_fd);
         return NULL;
     }
@@ -466,11 +481,12 @@ static void* control_thread(void *arg)
     {
         perror("listen");
         close(server_fd);
-        unlink(server_addr.sun_path);
+        unlink(socket_path);
         return NULL;
     }
     
-    printf("Control socket listening on: %s\n", server_addr.sun_path);
+    printf("Control socket listening on: %s\n", socket_path);
+    fflush(stdout);
     
     while (atomic_load(&g_running))
     {
@@ -495,7 +511,7 @@ static void* control_thread(void *arg)
     }
     
     close(server_fd);
-    unlink(server_addr.sun_path);
+    unlink(socket_path);
     printf("Control thread stopped.\n");
     return NULL;
 }

@@ -15,6 +15,7 @@ import os
 
 # Try multiple possible socket paths
 SOCKET_PATHS = [
+    "/tmp/sensor_ctrl.sock",
     "/run/sensor_ctrl.sock",
     "./sensor_ctrl.sock",
     "sensor_ctrl.sock"
